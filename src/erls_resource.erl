@@ -50,7 +50,7 @@ request(State, Method, Path, Headers, Params, Body, Options) ->
     {Headers2, Options1, Body} = make_body(Body, Headers, Options),
     do_request(State, Method, Path1, Headers2, Body, Options1).
 
-do_request(#erls_params{host=Host, port=Port, timeout=Timeout, ctimeout=CTimeout},
+do_request(#erls_params{host=Host, port=Port, timeout=Timeout, ctimeout=CTimeout, jsx_decode_options=JsxOpts},
            Method, Path, Headers, Body, Options) ->
     % Ugly, but to keep backwards compatibility: add recv_timeout and
     % connect_timeout when *not* present in Options.
@@ -71,13 +71,13 @@ do_request(#erls_params{host=Host, port=Port, timeout=Timeout, ctimeout=CTimeout
                                           ; Status =:= 201 ->
             case hackney:body(Client) of
                 {ok, RespBody} ->
-                    {ok, jsx:decode(RespBody)};
+                    {ok, jsx:decode(RespBody, JsxOpts)};
                 {error, _Reason} = Error ->
                     Error
             end;
         {ok, Status, _Headers, Client} ->
             case hackney:body(Client) of
-                {ok, RespBody} -> {error, {Status, jsx:decode(RespBody)}};
+                {ok, RespBody} -> {error, {Status, jsx:decode(RespBody, JsxOpts)}};
                 {error, _Reason} -> {error, Status}
             end;
         {error, R} ->
