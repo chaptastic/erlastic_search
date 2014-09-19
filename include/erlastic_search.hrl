@@ -7,6 +7,7 @@
 
           % These are passed verbatim to the underlying http client in use.
           http_client_options = []:: [term()],
+          jsx_decode_module = jsx :: atom(),
           jsx_decode_options = [] :: [term()],
 
           % Keeping the following two options for backwards compatibility.
