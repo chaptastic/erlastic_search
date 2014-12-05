@@ -28,6 +28,8 @@
         ,search/3
         ,search/5
         ,search_limit/4
+        ,scroll/2
+        ,scroll/3
         ,get_doc/3
         ,get_doc/4
         ,flush_index/1
@@ -215,6 +217,14 @@ search(Params, Index, Type, Query, Opts) when is_binary(Query) ->
     erls_resource:get(Params, filename:join([commas(Index), Type, <<"_search">>]), [], [{<<"q">>, Query}]++Opts, Params#erls_params.http_client_options);
 search(Params, Index, Type, Query, Opts) ->
     erls_resource:post(Params, filename:join([commas(Index), Type, <<"_search">>]), [], Opts, jsx:encode(Query), Params#erls_params.http_client_options).
+
+-spec scroll(record(erls_params), list() | binary(), list() | binary()) -> {ok, list()} | {error, any()}.
+scroll(Params, ScrollId, ScrollTime) ->
+    erls_resource:get(Params, <<"/_search/scroll">>, [], [{<<"scroll">>, ScrollTime}], ScrollId, Params#erls_params.http_client_options).
+
+-spec scroll(record(erls_params), list() | binary()) -> {ok, list()} | {error, any()}.
+scroll(Params, ScrollId) ->
+    scroll(Params, ScrollId, <<"10m">>).
 
 %%--------------------------------------------------------------------
 %% @doc
