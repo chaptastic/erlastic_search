@@ -75,7 +75,7 @@ create_index(Index) ->
 %% details to create and sends the request to Elastic Search.
 %% @end
 %%--------------------------------------------------------------------
--spec create_index(record(erls_params), binary()) -> {ok, list()} | {error, any()}.
+-spec create_index(record(erls_params), binary()) -> {ok, jsx:json_term()} | {error, any()}.
 create_index(Params, Index) ->
     erls_resource:put(Params, Index, [], [], [], Params#erls_params.http_client_options).
 
@@ -103,11 +103,11 @@ stats_index(Params, Index) ->
 %% Insert a mapping into an ElasticSearch index
 %% @end
 %%--------------------------------------------------------------------
--spec put_mapping(binary(), binary(), list() | binary()) -> {ok, list()} | {error, any()}.
+-spec put_mapping(binary(), binary(), jsx:json_term()) -> {ok, list()} | {error, any()}.
 put_mapping(Index, Type, Doc) ->
     put_mapping(#erls_params{}, Index, Type, Doc).
 
--spec put_mapping(record(erls_params), binary(), binary(), list() | binary()) -> {ok, list()} | {error, any()}.
+-spec put_mapping(record(erls_params), binary(), binary(), jsx:json_term()) -> {ok, list()} | {error, any()}.
 put_mapping(Params, Index, Type, Doc) -> 
     erls_resource:put(Params, filename:join([Index, Type, "_mapping"]), [], [], jsx:encode(Doc), Params#erls_params.http_client_options).
 
@@ -118,11 +118,11 @@ put_mapping(Params, Index, Type, Doc) ->
 %% default server. Elastic Search provides the doc with an id.
 %% @end
 %%--------------------------------------------------------------------
--spec index_doc(binary(), binary(), list() | binary()) -> {ok, list()} | {error, any()}.
+-spec index_doc(binary(), binary(), jsx:json_term()) -> {ok, list()} | {error, any()}.
 index_doc(Index, Type, Doc) ->
     index_doc(#erls_params{}, Index, Type, Doc).
 
--spec index_doc(record(erls_params), binary(), binary(), list() | binary()) -> {ok, list()} | {error, any()}.
+-spec index_doc(record(erls_params), binary(), binary(), jsx:json_term()) -> {ok, list()} | {error, any()}.
 index_doc(Params, Index, Type, Doc) when is_list(Doc) ->
     index_doc(Params, Index, Type, jsx:encode(Doc));
 index_doc(Params, Index, Type, Doc) when is_binary(Doc) ->
@@ -135,15 +135,15 @@ index_doc(Params, Index, Type, Doc) when is_binary(Doc) ->
 %% and passes to the default server.
 %% @end
 %%--------------------------------------------------------------------
--spec index_doc_with_id(binary(), binary(), binary(), list() | binary()) -> {ok, list()} | {error, any()}.
+-spec index_doc_with_id(binary(), binary(), binary(), jsx:json_term()) -> {ok, list()} | {error, any()}.
 index_doc_with_id(Index, Type, Id, Doc) ->
     index_doc_with_id_opts(#erls_params{}, Index, Type, Id, Doc, []).
 
--spec index_doc_with_id(record(erls_params), binary(), binary(), binary(), list() | binary()) -> {ok, list()} | {error, any()}.
+-spec index_doc_with_id(record(erls_params), binary(), binary(), binary(), jsx:json_term()) -> {ok, list()} | {error, any()}.
 index_doc_with_id(Params, Index, Type, Id, Doc) ->
     index_doc_with_id_opts(Params, Index, Type, Id, Doc, []).
 
--spec index_doc_with_id_opts(record(erls_params), binary(), binary(), binary(), list() | binary(), list()) -> {ok, list()} | {error, any()}.
+-spec index_doc_with_id_opts(record(erls_params), binary(), binary(), binary(), jsx:json_term(), list()) -> {ok, list()} | {error, any()}.
 index_doc_with_id_opts(Params, Index, Type, Id, Doc, Opts) when is_list(Doc), is_list(Opts) ->
     index_doc_with_id_opts(Params, Index, Type, Id, jsx:encode(Doc), []);
 index_doc_with_id_opts(Params, Index, Type, Id, Doc, Opts) when is_binary(Doc), is_list(Opts) ->
@@ -155,11 +155,11 @@ index_doc_with_id_opts(Params, Index, Type, Id, Doc, Opts) when is_binary(Doc), 
 %% (http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/docs-update.html)
 %% --------------------------------------------------------------------
 
--spec upsert_doc(binary(), binary(), binary(), list() | binary()) -> {ok, list()} | {error, any()}.
+-spec upsert_doc(binary(), binary(), binary(), jsx:json_term()) -> {ok, list()} | {error, any()}.
 upsert_doc(Index, Type, Id, Doc) ->
     upsert_doc_opts(#erls_params{}, Index, Type, Id, Doc, []).
 
--spec upsert_doc(record(erls_params), binary(), binary(), binary(), list() | binary()) -> {ok, list()} | {error, any()}.
+-spec upsert_doc(record(erls_params), binary(), binary(), binary(), jsx:json_term()) -> {ok, list()} | {error, any()}.
 upsert_doc(Params, Index, Type, Id, Doc) ->
     upsert_doc_opts(Params, Index, Type, Id, Doc, []).
 
@@ -198,21 +198,21 @@ bulk_index_docs(Params, IndexTypeIdJsonTuples) ->
 %% it to the Elastic Search server specified in Params.
 %% @end
 %%--------------------------------------------------------------------
--spec search(binary() | list(), list() | binary()) -> {ok, list()} | {error, any()}.
+-spec search(binary() | list(), jsx:json_term()) -> {ok, list()} | {error, any()}.
 search(Index, Query) ->
     search(#erls_params{}, Index, <<>>, Query, []).
 
--spec search(binary() | list() | record(erls_params), binary() | list(), list() | binary()) -> {ok, list()} | {error, any()}.
+-spec search(binary() | list() | record(erls_params), binary() | list(), jsx:json_term()) -> {ok, list()} | {error, any()}.
 search(Params, Index, Query) when is_record(Params, erls_params) ->
     search(Params, Index, <<>>, Query, []);
 search(Index, Type, Query) ->
     search(#erls_params{}, Index, Type, Query, []). 
 
--spec search_limit(binary() | list(), binary(), list() | binary(), integer()) -> {ok, list()} | {error, any()}.
+-spec search_limit(binary() | list(), binary(), jsx:json_term(), integer()) -> {ok, list()} | {error, any()}.
 search_limit(Index, Type, Query, Limit) when is_integer(Limit) ->
     search(#erls_params{}, Index, Type, Query, [{<<"size">>, integer_to_list(Limit)}]).
 
--spec search(record(erls_params), list() | binary(), list() | binary(), list() | binary(), list()) -> {ok, list()} | {error, any()}.
+-spec search(record(erls_params), list() | binary(), list() | binary(), jsx:json_term(), list()) -> {ok, list()} | {error, any()}.
 search(Params, Index, Type, Query, Opts) when is_binary(Query) ->
     erls_resource:get(Params, filename:join([commas(Index), Type, <<"_search">>]), [], [{<<"q">>, Query}]++Opts, Params#erls_params.http_client_options);
 search(Params, Index, Type, Query, Opts) ->
