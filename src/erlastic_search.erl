@@ -65,7 +65,7 @@
 %% Elastic Search, the default settings on localhost.
 %% @end
 %%--------------------------------------------------------------------
--spec create_index(binary()) -> {ok, list()} | {error, any()}.
+-spec create_index(binary()) -> {ok, jsx:json_term()} | {error, any()}.
 create_index(Index) ->
     create_index(#erls_params{}, Index).
 
@@ -198,31 +198,31 @@ bulk_index_docs(Params, IndexTypeIdJsonTuples) ->
 %% it to the Elastic Search server specified in Params.
 %% @end
 %%--------------------------------------------------------------------
--spec search(binary() | list(), jsx:json_term()) -> {ok, list()} | {error, any()}.
+-spec search(binary() | list(), jsx:json_term()) -> {ok, jsx:json_term()} | {error, any()}.
 search(Index, Query) ->
     search(#erls_params{}, Index, <<>>, Query, []).
 
--spec search(binary() | list() | record(erls_params), binary() | list(), jsx:json_term()) -> {ok, list()} | {error, any()}.
+-spec search(binary() | list() | record(erls_params), binary() | list(), jsx:json_term()) -> {ok, jsx:json_term()} | {error, any()}.
 search(Params, Index, Query) when is_record(Params, erls_params) ->
     search(Params, Index, <<>>, Query, []);
 search(Index, Type, Query) ->
     search(#erls_params{}, Index, Type, Query, []). 
 
--spec search_limit(binary() | list(), binary(), jsx:json_term(), integer()) -> {ok, list()} | {error, any()}.
+-spec search_limit(binary() | list(), binary(), jsx:json_term(), integer()) -> {ok, jsx:json_term()} | {error, any()}.
 search_limit(Index, Type, Query, Limit) when is_integer(Limit) ->
     search(#erls_params{}, Index, Type, Query, [{<<"size">>, integer_to_list(Limit)}]).
 
--spec search(record(erls_params), list() | binary(), list() | binary(), jsx:json_term(), list()) -> {ok, list()} | {error, any()}.
+-spec search(record(erls_params), list() | binary(), list() | binary(), jsx:json_term(), list()) -> {ok, jsx:json_term()} | {error, any()}.
 search(Params, Index, Type, Query, Opts) when is_binary(Query) ->
     erls_resource:get(Params, filename:join([commas(Index), Type, <<"_search">>]), [], [{<<"q">>, Query}]++Opts, Params#erls_params.http_client_options);
 search(Params, Index, Type, Query, Opts) ->
     erls_resource:post(Params, filename:join([commas(Index), Type, <<"_search">>]), [], Opts, jsx:encode(Query), Params#erls_params.http_client_options).
 
--spec scroll(record(erls_params), list() | binary(), list() | binary()) -> {ok, list()} | {error, any()}.
+-spec scroll(record(erls_params), list() | binary(), list() | binary()) -> {ok, jsx:json_term()} | {error, any()}.
 scroll(Params, ScrollId, ScrollTime) ->
     erls_resource:get(Params, <<"/_search/scroll">>, [], [{<<"scroll">>, ScrollTime}], ScrollId, Params#erls_params.http_client_options).
 
--spec scroll(record(erls_params), list() | binary()) -> {ok, list()} | {error, any()}.
+-spec scroll(record(erls_params), list() | binary()) -> {ok, jsx:json_term()} | {error, any()}.
 scroll(Params, ScrollId) ->
     scroll(Params, ScrollId, <<"10m">>).
 
@@ -232,7 +232,7 @@ scroll(Params, ScrollId) ->
 %% it to the default Elastic Search server on localhost:9100
 %% @end
 %%--------------------------------------------------------------------
--spec get_doc(binary(), binary(), binary()) -> {ok, list()} | {error, any()}.
+-spec get_doc(binary(), binary(), binary()) -> {ok, jsx:json_term()} | {error, any()}.
 get_doc(Index, Type, Id) ->
     get_doc(#erls_params{}, Index, Type, Id).
 
@@ -242,7 +242,7 @@ get_doc(Index, Type, Id) ->
 %% it to the Elastic Search server specified in Params.
 %% @end
 %%--------------------------------------------------------------------
--spec get_doc(record(erls_params), binary(), binary(), binary()) -> {ok, list()} | {error, any()}.
+-spec get_doc(record(erls_params), binary(), binary(), binary()) -> {ok, jsx:json_term()} | {error, any()}.
 get_doc(Params, Index, Type, Id) ->
     erls_resource:get(Params, filename:join([Index, Type, Id]), [], [], Params#erls_params.http_client_options).
 
